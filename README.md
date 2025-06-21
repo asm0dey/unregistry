@@ -68,6 +68,14 @@ mkdir -p ~/.docker/cli-plugins
 ln -sf $(brew --prefix)/bin/docker-pussh ~/.docker/cli-plugins/docker-pussh
 ```
 
+### Arch Linux from AUR
+
+You can use `yay` or any other AUR helper or just install the package manually via
+
+```
+yay -S unregistry
+```
+
 ### macOS/Linux via direct download
 
 ```bash
