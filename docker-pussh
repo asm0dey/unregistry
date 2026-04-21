@@ -73,6 +73,7 @@ usage() {
     echo ""
     echo "Options:"
     echo "  -h, --help                Show this help message."
+    echo "  -F, --ssh-config path     Path to SSH config file."
     echo "  -i, --ssh-key path        Path to SSH private key for remote login (if not already added to SSH agent)."
     echo "      --no-host-key-check   Skip SSH host key checking (use with caution)."
     echo "      --platform string     Push a specific platform for a multi-platform image (e.g., linux/amd64, linux/arm64)."
@@ -87,6 +88,7 @@ usage() {
     echo "  docker pussh myimage:latest user@host"
     echo "  docker pussh --platform linux/amd64 myimage host"
     echo "  docker pussh myimage:1.2.3 user@host:2222 -i ~/.ssh/id_ed25519"
+    echo "  docker pussh --ssh-config ~/.ssh/config.prod myimage:latest prod-server"
     echo ""
     echo "  # Set custom docker binary path and containerd socket on remote host:"
     echo "  REMOTE_DOCKER_PATH=/usr/local/bin/docker REMOTE_CONTAINERD_SOCKET=/var/run/docker/containerd/containerd.sock \\"
@@ -118,6 +120,10 @@ ssh_remote() {
         -o "ControlPersist=1m"
         -o "ConnectTimeout=15"
     )
+    # Add SSH config option if provided.
+    if [[ -n "${SSH_CONFIG}" ]]; then
+        ssh_opts+=(-F "${SSH_CONFIG}")
+    fi
     # Add port if specified
     if [[ -n "${port}" ]]; then
         ssh_opts+=(-p "${port}")
@@ -377,6 +383,7 @@ run_docker_vm_proxy() {
 }
 
 DOCKER_PLATFORM=""
+SSH_CONFIG=""
 SSH_KEY=""
 IMAGE=""
 SSH_ADDRESS=""
@@ -390,6 +397,13 @@ fi
 help_command="Run 'docker pussh --help' for usage information."
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        -F|--ssh-config)
+            if [[ -z "${2:-}" ]]; then
+                error "-F/--ssh-config option requires an argument.\n${help_command}"
+            fi
+            SSH_CONFIG="$2"
+            shift 2
+            ;;
         -i|--ssh-key)
             if [[ -z "${2:-}" ]]; then
                 error "-i/--ssh-key option requires an argument.\n${help_command}"
@@ -442,6 +456,9 @@ fi
 # Validate SSH key file exists if provided.
 if [[ -n "${SSH_KEY}" ]] && [[ ! -f "${SSH_KEY}" ]]; then
     error "SSH key file not found: ${SSH_KEY}"
+fi
+if [[ -n "${SSH_CONFIG}" ]] && [[ ! -f "${SSH_CONFIG}" ]]; then
+    error "SSH config file not found: ${SSH_CONFIG}"
 fi
 
 # Replace colon in the registry part of the image name with dash to make it a valid Docker image name component.

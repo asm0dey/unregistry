@@ -211,6 +211,12 @@ Using a custom SSH port:
 docker pussh myapp:latest user@server:2222
 ```
 
+Using a custom SSH config file:
+
+```shell
+docker pussh myapp:latest prod-server -F ~/.ssh/config.prod
+```
+
 Push a specific platform for a multi-platform image. The local Docker has to use
 [containerd image store](https://docs.docker.com/desktop/features/containerd/) to support multi-platform images.
 
@@ -270,7 +276,7 @@ docker push localhost:5000/myapp:latest
 
 ### Custom SSH options
 
-Need custom SSH settings? Use the standard SSH config file:
+Need custom SSH settings? Use the standard SSH config file, or pass a specific config with `-F`:
 
 ```shell
 # ~/.ssh/config
@@ -282,6 +288,9 @@ Host prod-server
 
 # Now just use
 docker pussh myapp:latest prod-server
+
+# Or use an alternate config file
+docker pussh myapp:latest prod-server -F ~/.ssh/config.prod
 ```
 
 ## Third-party projects
